@@ -1,39 +1,51 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
+import { PaperProvider } from 'react-native-paper';
+import { RecoilRoot } from 'recoil';
+import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <RecoilRoot>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <PaperProvider>
+          <Tabs screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: '#0a7ea4',
+          }}>
+            <Tabs.Screen
+              name="index"
+              options={{
+                title: 'Home',
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="home" size={size} color={color} />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="blocklist"
+              options={{
+                title: 'Blocklist',
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="block" size={size} color={color} />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="settings"
+              options={{
+                title: 'Settings',
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="settings" size={size} color={color} />
+                ),
+              }}
+            />
+          </Tabs>
+        </PaperProvider>
+      </ThemeProvider>
+    </RecoilRoot>
   );
 }
