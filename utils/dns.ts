@@ -1,6 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BlockedSite } from '@/store/atoms';
+import { BlockedSite } from '@/types';
 
 export const DNS_PROVIDERS = {
   CLOUDFLARE_FAMILY: {
@@ -19,9 +19,11 @@ export const DNS_PROVIDERS = {
 
 // Default blocked domains
 const DEFAULT_BLOCKED_DOMAINS = [
-  'adult.com',
-  'porn.com',
-  // Add more default domains
+  'youtube.com',
+  'facebook.com',
+  'twitter.com',
+  'instagram.com',
+  'tiktok.com'
 ];
 
 export async function checkDNSConfiguration(): Promise<boolean> {
@@ -65,23 +67,25 @@ export async function updateBlockedDomains(sites: BlockedSite[]): Promise<void> 
   try {
     const domains = sites.map(site => site.url);
     await AsyncStorage.setItem('blockedDomains', JSON.stringify(domains));
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error updating blocked domains:', error);
   }
 }
 
 export async function testDNSBlocking(domain: string): Promise<boolean> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const response = await fetch(`https://${domain}`, {
       method: 'HEAD',
-      timeout: 5000
+      signal: controller.signal
     });
-    // If we can reach the domain, blocking is not working
+
+    clearTimeout(timeoutId);
     return !response.ok;
   } catch (error) {
     // If we can't reach the domain, blocking might be working
     return true;
   }
-}
-
-// Update our atoms.ts to include DNS status 
+} 

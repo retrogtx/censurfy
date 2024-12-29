@@ -12,6 +12,21 @@
       ],
       "@/constants/*": [
         "./constants/*"
+      ],
+      "@/store/*": [
+        "./store/*"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/schemas/*": [
+        "./schemas/*"
       ]
     }
   },

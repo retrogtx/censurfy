@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
 import { blockedSitesState } from '@/store/atoms';
 import { nanoid } from 'nanoid';
-import { getBlockedDomains } from '../utils/dns';
+import { getBlockedDomains } from '@/utils/dns';
 
 export default function BlocklistScreen() {
   const [blockedSites, setBlockedSites] = useRecoilState(blockedSitesState);

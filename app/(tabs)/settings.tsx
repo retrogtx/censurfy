@@ -23,7 +23,7 @@ export default function SettingsScreen() {
   };
 
   const testDNSProtection = async () => {
-    const testDomain = 'adult.com';
+    const testDomain = 'youtube.com';
     const isBlocked = await testDNSBlocking(testDomain);
     Alert.alert(
       'DNS Protection Test',

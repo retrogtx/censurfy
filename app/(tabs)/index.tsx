@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
 import { appSettingsState } from '@/store/atoms';
 import * as WebBrowser from 'expo-web-browser';
-import { checkDNSConfiguration } from '../utils/dns';
+import { checkDNSConfiguration } from '@/utils/dns';
 
 export default function HomeScreen() {
   const [settings, setSettings] = useRecoilState(appSettingsState);
