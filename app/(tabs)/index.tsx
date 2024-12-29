@@ -1,74 +1,81 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Switch, Text, Surface, Button } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRecoilState } from 'recoil';
+import { appSettingsState } from '../store/atoms';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function HomeScreen() {
+  const [settings, setSettings] = useRecoilState(appSettingsState);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+
+  const toggleProtection = () => {
+    setSettings(prev => ({
+      ...prev,
+      isProtectionEnabled: !prev.isProtectionEnabled
+    }));
+  };
+
+  const configureDNS = async () => {
+    setIsConfiguring(true);
+    try {
+      await WebBrowser.openBrowserAsync(
+        'https://developers.cloudflare.com/1.1.1.1/setup/'
+      );
+    } catch (error) {
+      console.error('Error opening browser:', error);
+    } finally {
+      setIsConfiguring(false);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <Surface style={styles.statusCard}>
+        <Text variant="headlineMedium">Protection Status</Text>
+        <View style={styles.statusRow}>
+          <Text variant="bodyLarge">
+            {settings.isProtectionEnabled ? 'Protection Active' : 'Protection Disabled'}
+          </Text>
+          <Switch value={settings.isProtectionEnabled} onValueChange={toggleProtection} />
+        </View>
+      </Surface>
+
+      <Surface style={[styles.statusCard, styles.marginTop]}>
+        <Text variant="titleMedium">DNS Configuration</Text>
+        <Text variant="bodyMedium" style={styles.marginTop}>
+          Using {settings.dnsProvider} DNS
+        </Text>
+        <Button 
+          mode="contained"
+          onPress={configureDNS}
+          loading={isConfiguring}
+          style={styles.marginTop}>
+          Configure DNS Settings
+        </Button>
+      </Surface>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  statusCard: {
+    padding: 16,
+    borderRadius: 12,
+    elevation: 4,
+  },
+  statusRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    marginTop: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  marginTop: {
+    marginTop: 16,
   },
 });
