@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { PaperProvider } from 'react-native-paper';
 import { RecoilRoot } from 'recoil';
 import { Stack } from 'expo-router';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
