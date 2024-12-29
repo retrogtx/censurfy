@@ -1,26 +1,51 @@
-import { useState } from 'react';
-import { StyleSheet, FlatList } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, Alert } from 'react-native';
 import { Surface, Text, TextInput, Button, List } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
-import { blockedSitesState } from '../store/atoms';
+import { blockedSitesState } from '@/store/atoms';
 import { nanoid } from 'nanoid';
+import { getBlockedDomains } from '../utils/dns';
 
 export default function BlocklistScreen() {
   const [blockedSites, setBlockedSites] = useRecoilState(blockedSitesState);
   const [newUrl, setNewUrl] = useState('');
 
+  useEffect(() => {
+    // Load default blocked domains
+    const loadBlockedDomains = async () => {
+      const domains = await getBlockedDomains();
+      if (domains.length > 0) {
+        const newSites = domains.map(url => ({
+          id: nanoid(),
+          url,
+          dateAdded: new Date().toISOString()
+        }));
+        setBlockedSites(current => [...current, ...newSites]);
+      }
+    };
+
+    loadBlockedDomains();
+  }, []);
+
   const addSite = () => {
     if (newUrl.trim()) {
-      setBlockedSites(current => [
-        ...current,
-        {
-          id: nanoid(),
-          url: newUrl.trim(),
-          dateAdded: new Date().toISOString(),
-        },
-      ]);
-      setNewUrl('');
+      try {
+        const url = new URL(newUrl.startsWith('http') ? newUrl : `https://${newUrl}`);
+        setBlockedSites(current => [
+          ...current,
+          {
+            id: nanoid(),
+            url: url.hostname,
+            dateAdded: new Date().toISOString(),
+            blockCount: 0
+          },
+        ]);
+        setNewUrl('');
+      } catch (error) {
+        // Show error for invalid URL
+        Alert.alert('Invalid URL', 'Please enter a valid website address');
+      }
     }
   };
 
