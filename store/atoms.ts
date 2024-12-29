@@ -1,21 +1,21 @@
 import { atom } from 'recoil';
-import { AppSettings, BlockedSite } from '@/types';
+import { BlockedKeyword, BlockEvent, MonitoringStatus } from '@/types/index';
 
-export const blockedSitesState = atom<BlockedSite[]>({
-  key: 'blockedSites',
+export const blockedKeywordsState = atom<BlockedKeyword[]>({
+  key: 'blockedKeywords',
   default: [],
 });
 
-export const appSettingsState = atom<AppSettings>({
-  key: 'appSettings',
+export const blockEventsState = atom<BlockEvent[]>({
+  key: 'blockEvents',
+  default: [],
+});
+
+export const monitoringStatusState = atom<MonitoringStatus>({
+  key: 'monitoringStatus',
   default: {
-    isProtectionEnabled: false,
-    useSecureDNS: true,
-    dnsProvider: 'CLOUDFLARE_FAMILY',
-    parentalControlEnabled: false,
-    dnsStatus: {
-      configured: false,
-      lastChecked: new Date().toISOString()
-    }
+    isActive: false,
+    lastCheck: new Date().toISOString(),
+    blockedCount: 0
   },
 }); 

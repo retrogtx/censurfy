@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
-export const urlSchema = z.object({
-  url: z
+export const keywordSchema = z.object({
+  keyword: z
     .string()
-    .url('Please enter a valid URL')
-    .refine((url) => !url.includes('safe-domain.com'), {
-      message: 'This domain cannot be blocked',
+    .min(2, 'Keyword must be at least 2 characters')
+    .max(50, 'Keyword too long')
+    .refine((keyword) => !keyword.includes('safe-word'), {
+      message: 'This keyword cannot be blocked',
     }),
 }); 

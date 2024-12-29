@@ -1,4 +1,4 @@
-export interface BlockedKeyword {
+interface BlockedKeyword {
   id: string;
   keyword: string;
   isRegex: boolean;
@@ -6,7 +6,7 @@ export interface BlockedKeyword {
   dateAdded: string;
 }
 
-export interface BlockEvent {
+interface BlockEvent {
   id: string;
   keyword: string;
   detectedText: string;
@@ -14,8 +14,10 @@ export interface BlockEvent {
   appPackageName?: string;
 }
 
-export interface MonitoringStatus {
+interface MonitoringStatus {
   isActive: boolean;
   lastCheck: string;
   blockedCount: number;
-} 
+}
+
+export type { BlockedKeyword, BlockEvent, MonitoringStatus }; 

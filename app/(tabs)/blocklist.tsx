@@ -1,94 +1,77 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, Alert } from 'react-native';
-import { Surface, Text, TextInput, Button, List } from 'react-native-paper';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { TextInput, Button, List, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
-import { blockedSitesState } from '@/store/atoms';
+import { blockedKeywordsState } from '@/store/atoms';
 import { nanoid } from 'nanoid';
-import { getBlockedDomains } from '@/utils/dns';
 
 export default function BlocklistScreen() {
-  const [blockedSites, setBlockedSites] = useRecoilState(blockedSitesState);
-  const [newUrl, setNewUrl] = useState('');
+  const [blockedKeywords, setBlockedKeywords] = useRecoilState(blockedKeywordsState);
+  const [newKeyword, setNewKeyword] = useState('');
 
-  useEffect(() => {
-    // Load default blocked domains
-    const loadBlockedDomains = async () => {
-      const domains = await getBlockedDomains();
-      if (domains.length > 0) {
-        const newSites = domains.map(url => ({
-          id: nanoid(),
-          url,
-          dateAdded: new Date().toISOString()
-        }));
-        setBlockedSites(current => [...current, ...newSites]);
-      }
-    };
+  const addKeyword = () => {
+    if (!newKeyword.trim()) return;
 
-    loadBlockedDomains();
-  }, []);
-
-  const addSite = () => {
-    if (newUrl.trim()) {
-      try {
-        const url = new URL(newUrl.startsWith('http') ? newUrl : `https://${newUrl}`);
-        setBlockedSites(current => [
-          ...current,
-          {
-            id: nanoid(),
-            url: url.hostname,
-            dateAdded: new Date().toISOString(),
-            blockCount: 0
-          },
-        ]);
-        setNewUrl('');
-      } catch (error) {
-        // Show error for invalid URL
-        Alert.alert('Invalid URL', 'Please enter a valid website address');
-      }
-    }
+    setBlockedKeywords(prev => [...prev, {
+      id: nanoid(),
+      keyword: newKeyword.trim(),
+      isRegex: false,
+      isEnabled: true,
+      dateAdded: new Date().toISOString()
+    }]);
+    setNewKeyword('');
   };
 
-  const removeSite = (id: string) => {
-    setBlockedSites(current => current.filter(site => site.id !== id));
+  const removeKeyword = (id: string) => {
+    setBlockedKeywords(prev => prev.filter(keyword => keyword.id !== id));
+  };
+
+  const toggleKeyword = (id: string) => {
+    setBlockedKeywords(prev => prev.map(keyword => 
+      keyword.id === id ? { ...keyword, isEnabled: !keyword.isEnabled } : keyword
+    ));
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Surface style={styles.inputContainer}>
+      <View style={styles.inputContainer}>
         <TextInput
-          label="Enter URL to block"
-          value={newUrl}
-          onChangeText={setNewUrl}
-          mode="outlined"
+          label="Add new keyword"
+          value={newKeyword}
+          onChangeText={setNewKeyword}
+          onSubmitEditing={addKeyword}
         />
-        <Button mode="contained" onPress={addSite} style={styles.button}>
-          Add to Blocklist
+        <Button 
+          mode="contained" 
+          onPress={addKeyword}
+          style={styles.button}
+          disabled={!newKeyword.trim()}
+        >
+          Add Keyword
         </Button>
-      </Surface>
+      </View>
 
-      <FlatList
-        data={blockedSites}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
+      {blockedKeywords.length === 0 ? (
+        <Text style={styles.emptyText}>No keywords added yet</Text>
+      ) : (
+        blockedKeywords.map(keyword => (
           <List.Item
-            title={item.url}
-            description={new Date(item.dateAdded).toLocaleDateString()}
+            key={keyword.id}
+            title={keyword.keyword}
             right={props => (
-              <Button
-                {...props}
-                onPress={() => removeSite(item.id)}
-                mode="text"
-                textColor="red">
-                Remove
-              </Button>
+              <View style={{ flexDirection: 'row' }}>
+                <Button onPress={() => toggleKeyword(keyword.id)}>
+                  {keyword.isEnabled ? 'Disable' : 'Enable'}
+                </Button>
+                <Button onPress={() => removeKeyword(keyword.id)}>
+                  Remove
+                </Button>
+              </View>
             )}
           />
-        )}
-        ListEmptyComponent={() => (
-          <Text style={styles.emptyText}>No blocked sites yet</Text>
-        )}
-      />
+        ))
+      )}
     </SafeAreaView>
   );
 }

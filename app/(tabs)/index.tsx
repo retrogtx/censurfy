@@ -1,93 +1,54 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Switch, Text, Surface, Button } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
-import { appSettingsState } from '@/store/atoms';
-import * as WebBrowser from 'expo-web-browser';
-import { checkDNSConfiguration } from '@/utils/dns';
+import { monitoringStatusState } from '@/store/atoms';
+import MonitoringService from '@/services/MonitoringService';
 
 export default function HomeScreen() {
-  const [settings, setSettings] = useRecoilState(appSettingsState);
-  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [monitoringStatus, setMonitoringStatus] = useRecoilState(monitoringStatusState);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const toggleProtection = () => {
-    setSettings(prev => ({
-      ...prev,
-      isProtectionEnabled: !prev.isProtectionEnabled
-    }));
-  };
-
-  const configureDNS = async () => {
-    setIsConfiguring(true);
+  const toggleMonitoring = async () => {
+    setIsLoading(true);
     try {
-      await WebBrowser.openBrowserAsync(
-        'https://developers.cloudflare.com/1.1.1.1/setup/'
-      );
+      const monitoringService = MonitoringService.getInstance();
+      
+      if (monitoringStatus.isActive) {
+        await monitoringService.stopMonitoring();
+      } else {
+        await monitoringService.startMonitoring();
+      }
+
+      setMonitoringStatus((prev: typeof monitoringStatus) => ({
+        ...prev,
+        isActive: !prev.isActive,
+        lastCheck: new Date().toISOString()
+      }));
     } catch (error) {
-      console.error('Error opening browser:', error);
+      console.error('Failed to toggle monitoring:', error);
     } finally {
-      setIsConfiguring(false);
+      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const checkDNS = async () => {
-      const isConfigured = await checkDNSConfiguration();
-      setSettings(prev => ({
-        ...prev,
-        dnsStatus: {
-          configured: isConfigured,
-          lastChecked: new Date().toISOString()
-        }
-      }));
-    };
-
-    if (settings.isProtectionEnabled) {
-      checkDNS();
-    }
-  }, [settings.isProtectionEnabled]);
 
   return (
     <SafeAreaView style={styles.container}>
       <Surface style={styles.statusCard}>
-        <Text variant="headlineMedium">Protection Status</Text>
-        <View style={styles.statusRow}>
-          <Text variant="bodyLarge">
-            {settings.isProtectionEnabled ? 'Protection Active' : 'Protection Disabled'}
-          </Text>
-          <Switch value={settings.isProtectionEnabled} onValueChange={toggleProtection} />
+        <Text variant="titleLarge">Content Protection</Text>
+        <View style={styles.row}>
+          <Text>Protection Status</Text>
+          <Switch
+            value={monitoringStatus.isActive}
+            onValueChange={toggleMonitoring}
+            disabled={isLoading}
+          />
         </View>
-      </Surface>
-
-      <Surface style={[styles.statusCard, styles.marginTop]}>
-        <Text variant="titleMedium">DNS Configuration</Text>
-        <Text variant="bodyMedium" style={styles.marginTop}>
-          Using {settings.dnsProvider} DNS
+        <Text style={styles.stats}>
+          Blocked Content: {monitoringStatus.blockedCount}
         </Text>
-        <Button 
-          mode="contained"
-          onPress={configureDNS}
-          loading={isConfiguring}
-          style={styles.marginTop}>
-          Configure DNS Settings
-        </Button>
       </Surface>
-
-      {settings.isProtectionEnabled && !settings.dnsStatus.configured && (
-        <Surface style={[styles.statusCard, styles.marginTop, styles.warning]}>
-          <Text variant="titleMedium">DNS Not Configured</Text>
-          <Text variant="bodyMedium" style={styles.marginTop}>
-            Please configure your DNS settings to enable protection
-          </Text>
-          <Button 
-            mode="contained"
-            onPress={configureDNS}
-            style={styles.marginTop}>
-            Configure Now
-          </Button>
-        </Surface>
-      )}
     </SafeAreaView>
   );
 }
@@ -101,17 +62,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 4,
+    gap: 16,
   },
-  statusRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
   },
-  marginTop: {
-    marginTop: 16,
-  },
-  warning: {
-    backgroundColor: '#ffd700',
+  stats: {
+    opacity: 0.7,
   },
 });
