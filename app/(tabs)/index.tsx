@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Switch, Text, Surface, Button } from 'react-native-paper';
+import { Switch, Text, Surface, Button, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecoilState } from 'recoil';
 import { monitoringStatusState } from '@/store/atoms';
@@ -9,6 +9,7 @@ import MonitoringService from '@/services/MonitoringService';
 export default function HomeScreen() {
   const [monitoringStatus, setMonitoringStatus] = useRecoilState(monitoringStatusState);
   const [isLoading, setIsLoading] = useState(false);
+  const [testText, setTestText] = useState('');
 
   const toggleMonitoring = async () => {
     setIsLoading(true);
@@ -33,6 +34,12 @@ export default function HomeScreen() {
     }
   };
 
+  const testDetection = async () => {
+    const monitoringService = MonitoringService.getInstance();
+    const shouldBlock = await monitoringService.checkForBlockedContent(testText);
+    alert(shouldBlock ? 'Blocked Content Detected!' : 'Content is Safe');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Surface style={styles.statusCard}>
@@ -48,6 +55,17 @@ export default function HomeScreen() {
         <Text style={styles.stats}>
           Blocked Content: {monitoringStatus.blockedCount}
         </Text>
+        <View style={styles.testSection}>
+          <TextInput
+            label="Test Text Detection"
+            value={testText}
+            onChangeText={setTestText}
+            multiline
+          />
+          <Button onPress={testDetection} mode="contained" style={styles.button}>
+            Test Detection
+          </Button>
+        </View>
       </Surface>
     </SafeAreaView>
   );
@@ -71,5 +89,11 @@ const styles = StyleSheet.create({
   },
   stats: {
     opacity: 0.7,
+  },
+  testSection: {
+    marginTop: 16,
+  },
+  button: {
+    marginTop: 8,
   },
 });

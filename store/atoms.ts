@@ -1,5 +1,5 @@
 import { atom } from 'recoil';
-import { BlockedKeyword, BlockEvent, MonitoringStatus } from '@/types/index';
+import { BlockedKeyword, BlockEvent, MonitoringStatus } from '@/types';
 
 export const blockedKeywordsState = atom<BlockedKeyword[]>({
   key: 'blockedKeywords',

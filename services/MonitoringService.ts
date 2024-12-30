@@ -1,6 +1,6 @@
 import { AccessibilityInfo, BackHandler, Platform, findNodeHandle } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BlockedKeyword, BlockEvent } from '@/types/index';
+import { BlockedKeyword, BlockEvent } from '@/types';
 
 // Built-in blocklist that can't be disabled
 const BUILT_IN_KEYWORDS = [
@@ -66,7 +66,7 @@ class MonitoringService {
     }
   };
 
-  private async checkForBlockedContent(text: string): Promise<boolean> {
+  async checkForBlockedContent(text: string): Promise<boolean> {
     try {
       // First check built-in keywords
       for (const keyword of BUILT_IN_KEYWORDS) {
