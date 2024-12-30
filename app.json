@@ -27,7 +27,7 @@
     "extra": {
       "router": {
         "origin": false,
-        "root": "./app"
+        "root": "app"
       },
       "eas": {
         "projectId": "57ab44c4-1ef1-4695-87bc-483e25fff0fd"
