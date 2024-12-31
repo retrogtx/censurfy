@@ -1,9 +1,6 @@
-// Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require('expo/metro-config');
+const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
 
 const config = getDefaultConfig(__dirname);
 
-// Add this for expo-router context resolution
-config.resolver.requireCycle = ['expo-router'];
-
-module.exports = config; 
+module.exports = withNativeWind(config, { input: "./global.css" });
