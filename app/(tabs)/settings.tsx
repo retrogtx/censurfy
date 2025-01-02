@@ -1,9 +1,8 @@
 import { View, TouchableOpacity, ScrollView } from 'react-native';
-import { Text } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useState } from 'react';
+import * as S from '../../styles/home.styles';
 
 interface SettingItemProps {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -31,12 +30,12 @@ function SettingItem({ icon, title, description, isActive, onPress }: SettingIte
           />
         </View>
         <View className="flex-1">
-          <Text className={`font-medium ${isActive ? 'text-green-500' : 'text-white'}`}>
+          <S.StyledText className={`font-medium ${isActive ? 'text-green-500' : 'text-white'}`}>
             {title}
-          </Text>
-          <Text className="text-slate-400 text-sm mt-0.5">
+          </S.StyledText>
+          <S.StyledText className="text-slate-400 text-sm mt-0.5">
             {description}
-          </Text>
+          </S.StyledText>
         </View>
         <MaterialIcons 
           name={isActive ? "toggle-on" : "toggle-off"} 
@@ -58,36 +57,25 @@ export default function SettingsScreen() {
   });
 
   const toggleSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
-    <View className="flex-1 bg-black">
-      <LinearGradient
-        colors={['#0f172a', '#020617']}
-        className="absolute inset-0"
-      />
-
-      {/* Safe Area Spacer */}
+    <S.Container className="flex-1 bg-slate-950">
       <View className="h-12" />
 
-      {/* Header */}
       <View className="px-6 py-4">
-        <Text className="text-2xl font-bold text-white">Settings</Text>
-        <Text className="text-slate-400 mt-1">
+        <S.Title className="text-2xl font-bold text-white">Settings</S.Title>
+        <S.StyledText className="text-slate-400 mt-1">
           Customize your protection
-        </Text>
+        </S.StyledText>
       </View>
 
-      {/* Settings List */}
       <ScrollView className="flex-1 px-6">
         <View className="py-4">
-          <Text className="text-slate-400 text-sm uppercase tracking-wider mb-3">
+          <S.StyledText className="text-slate-400 text-sm uppercase tracking-wider mb-3">
             Protection
-          </Text>
+          </S.StyledText>
           
           <SettingItem
             icon="logout"
@@ -105,9 +93,9 @@ export default function SettingsScreen() {
             onPress={() => toggleSetting('notifications')}
           />
 
-          <Text className="text-slate-400 text-sm uppercase tracking-wider mb-3 mt-6">
+          <S.StyledText className="text-slate-400 text-sm uppercase tracking-wider mb-3 mt-6">
             Security
-          </Text>
+          </S.StyledText>
 
           <SettingItem
             icon="block"
@@ -134,6 +122,6 @@ export default function SettingsScreen() {
           />
         </View>
       </ScrollView>
-    </View>
+    </S.Container>
   );
 } 
