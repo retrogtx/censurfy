@@ -1,107 +1,74 @@
-import { useState, useEffect } from 'react';
-import { StatusBar, ScrollView, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { MotiView } from 'moti';
-import * as S from '../../styles/home.styles';
+import { Image, StyleSheet, Platform } from 'react-native';
 
-export default function Index() {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+import { HelloWave } from '@/components/HelloWave';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
-  useEffect(() => {
-    setIsReady(true);
-  }, []);
-
-  if (!isReady) return null;
-
+export default function HomeScreen() {
   return (
-    <S.Container className="flex-1 bg-slate-950">
-      <StatusBar barStyle="light-content" />
-      
-      <S.Header className="p-4 flex-row items-center justify-between border-b border-slate-800">
-        <S.Title className="text-xl font-bold text-white">Censurfy</S.Title>
-        <S.IconButton className="w-10 h-10 rounded-full bg-slate-800 items-center justify-center" activeOpacity={0.7}>
-          <MaterialIcons name="settings" size={24} color="#fff" />
-        </S.IconButton>
-      </S.Header>
-
-      <ScrollView 
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
-        <S.StatusContainer
-          animate={{ 
-            backgroundColor: isEnabled ? 'rgba(34,197,94,0.1)' : 'transparent'
-          }}
-        >
-          <TouchableOpacity
-            className="items-center"
-            onPress={() => setIsEnabled(!isEnabled)}
-            activeOpacity={0.9}
-          >
-            <S.StatusIcon
-              animate={{ 
-                scale: isEnabled ? 1.1 : 1,
-                backgroundColor: isEnabled ? '#22c55e' : '#1e293b'
-              }}
-              transition={{ type: 'spring', damping: 15 }}
-            >
-              <MaterialIcons 
-                name="security" 
-                size={40} 
-                color={isEnabled ? "#fff" : "#64748b"} 
-              />
-            </S.StatusIcon>
-            
-            <S.Title className={`mb-2 ${isEnabled ? 'text-green-500' : 'text-slate-500'}`}>
-              {isEnabled ? 'PROTECTED' : 'VULNERABLE'}
-            </S.Title>
-            <S.StyledText className="text-slate-400">
-              {isEnabled ? 'Your device is actively protected' : 'Tap to enable protection'}
-            </S.StyledText>
-          </TouchableOpacity>
-        </S.StatusContainer>
-
-        {/* Stats Cards */}
-        <S.Card className="bg-slate-900 rounded-xl p-4 mb-4">
-          <S.StatGrid className="flex-row gap-4">
-            <S.StatItem className="flex-1 bg-slate-800 p-4 rounded-xl">
-              <View className="w-12 h-12 rounded-full bg-blue-500/20 items-center justify-center mb-3">
-                <MaterialIcons name="block" size={24} color="#3b82f6" />
-              </View>
-              <S.Title className="text-white">24</S.Title>
-              <S.StyledText className="text-slate-400">Blocks</S.StyledText>
-            </S.StatItem>
-            
-            <S.StatItem className="flex-1 bg-slate-800 p-4 rounded-xl">
-              <View className="w-12 h-12 rounded-full bg-purple-500/20 items-center justify-center mb-3">
-                <MaterialIcons name="shield" size={24} color="#a855f7" />
-              </View>
-              <S.Title className="text-white">12</S.Title>
-              <S.StyledText className="text-slate-400">Filters</S.StyledText>
-            </S.StatItem>
-          </S.StatGrid>
-        </S.Card>
-
-        {/* Recent Activity */}
-        <S.Card className="bg-slate-900 rounded-xl p-4">
-          <S.Title className="text-white mb-4">Recent Activity</S.Title>
-          {[1, 2, 3].map((item) => (
-            <S.ActivityItem key={item} className="flex-row items-center p-3 mb-2">
-              <View className="w-12 h-12 rounded-full bg-red-500/20 items-center justify-center mr-3">
-                <MaterialIcons name="warning" size={24} color="#ef4444" />
-              </View>
-              <S.StyledText className="flex-1 text-slate-400">
-                Blocked inappropriate content
-              </S.StyledText>
-              <S.ActivityTime className="text-slate-500 text-sm ml-2">
-                2 minutes ago
-              </S.ActivityTime>
-            </S.ActivityItem>
-          ))}
-        </S.Card>
-      </ScrollView>
-    </S.Container>
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerImage={
+        <Image
+          source={require('@/assets/images/partial-react-logo.png')}
+          style={styles.reactLogo}
+        />
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <ThemedText>
+          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
+          Press{' '}
+          <ThemedText type="defaultSemiBold">
+            {Platform.select({
+              ios: 'cmd + d',
+              android: 'cmd + m',
+              web: 'F12'
+            })}
+          </ThemedText>{' '}
+          to open developer tools.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+        <ThemedText>
+          Tap the Explore tab to learn more about what's included in this starter app.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
+        <ThemedText>
+          When you're ready, run{' '}
+          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
+          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});
