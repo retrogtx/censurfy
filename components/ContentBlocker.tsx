@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Switch, Alert, Linking, AppState, TextInput } from 'react-native'
+import { View, StyleSheet, Switch, Alert, Linking, AppState, TextInput, Platform, NativeModules } from 'react-native'
 import { ThemedText } from './ThemedText'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { analyzeText } from '@/lib/textAnalyzer'
@@ -38,17 +38,14 @@ export default function ContentBlocker() {
     if (value) {
       Alert.alert(
         'Enable Content Blocker',
-        'Warning: Once enabled, this cannot be disabled without system permissions. Are you sure?',
+        'This will request system permissions to protect the app.',
         [
-          { 
-            text: 'Cancel', 
-            style: 'cancel',
-            onPress: () => setIsEnabled(false)  // Revert if cancelled
-          },
+          { text: 'Cancel', style: 'cancel', onPress: () => setIsEnabled(false) },
           {
             text: 'Enable',
             onPress: async () => {
               await AsyncStorage.setItem('blockerEnabled', 'true')
+              requestDeviceAdmin()
               // Keep it enabled and show settings prompt
               Alert.alert('Additional Setup Required', 'Please go to Settings to prevent app uninstallation',
                 [{ text: 'Open Settings', onPress: () => Linking.openSettings() }]
@@ -57,6 +54,18 @@ export default function ContentBlocker() {
           }
         ]
       )
+    }
+  }
+
+  const requestDeviceAdmin = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        // This would require a native module
+        await NativeModules.DeviceAdmin.requestAdminPrivileges()
+        Alert.alert('Success', 'App protection enabled')
+      } catch (error) {
+        Alert.alert('Error', 'Failed to enable app protection')
+      }
     }
   }
 
