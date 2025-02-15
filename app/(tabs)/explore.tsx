@@ -23,75 +23,86 @@ export default function ExploreScreen() {
           style={styles.headerImage}
         />
       }>
-      {/* Status Overview Section */}
-      <ThemedView style={styles.statusContainer}>
-        <ThemedText type="title" style={styles.statusTitle}>
-          Blocker Status
-        </ThemedText>
-        <ContentBlocker />
-        <Link href="/" style={[styles.settingsLink, { borderColor: accentColor }]}>
-          <ThemedText style={{ color: accentColor }}>Advanced Settings</ThemedText>
-        </Link>
+      <ThemedView style={styles.contentContainer}>
+        {/* Status Overview Section */}
+        <ThemedView style={styles.statusContainer}>
+          <ThemedText type="title" style={styles.statusTitle}>
+            Blocker Status
+          </ThemedText>
+          <ContentBlocker />
+          <Link
+            href="/"
+            style={[styles.settingsLink, { borderColor: accentColor }]}>
+            <ThemedText style={{ color: accentColor }}>
+              Advanced Settings
+            </ThemedText>
+          </Link>
+        </ThemedView>
+
+        {/* Quick Stats */}
+        <ThemedView style={styles.statsContainer}>
+          <ThemedView style={styles.statItem}>
+            <ThemedText type="defaultSemiBold">⏱️ Active Duration</ThemedText>
+            <ThemedText>24h 15m</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.statItem}>
+            <ThemedText type="defaultSemiBold">🚫 Blocks Today</ThemedText>
+            <ThemedText>42 attempts</ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        {/* Existing Collapsible Sections with enhancements */}
+        <Collapsible title="How it works">
+          <ThemedText style={styles.sectionText}>
+            🛡️ Real-time monitoring of all text input and displayed content
+          </ThemedText>
+          <ThemedText style={styles.sectionText}>
+            ⚡ Instant blocking of inappropriate content
+          </ThemedText>
+          <ThemedText style={styles.sectionText}>
+            🔒 Time-locked security once activated
+          </ThemedText>
+        </Collapsible>
+
+        {/* Enhanced Features Section */}
+        <Collapsible title="Advanced Protection Features">
+          <ThemedView style={styles.featureItem}>
+            <IconSymbol name="checkmark.shield.fill" size={20} color="#4CAF50" />
+            <ThemedText style={styles.featureText}>Deep Content Analysis</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.featureItem}>
+            <IconSymbol name="clock.fill" size={20} color="#FFA000" />
+            <ThemedText style={styles.featureText}>Customizable Time Locks</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.featureItem}>
+            <IconSymbol name="eye.slash.fill" size={20} color="#D32F2F" />
+            <ThemedText style={styles.featureText}>Stealth Mode</ThemedText>
+          </ThemedView>
+        </Collapsible>
+
+        {/* New FAQ Section */}
+        <Collapsible title="FAQ & Troubleshooting">
+          <ThemedText style={styles.faqQuestion}>How do I emergency disable?</ThemedText>
+          <ThemedText style={styles.faqAnswer}>
+            Contact support with your recovery code for verification
+          </ThemedText>
+          
+          <ThemedText style={styles.faqQuestion}>Battery usage concerns?</ThemedText>
+          <ThemedText style={styles.faqAnswer}>
+            Optimized to use less than 2% battery daily
+          </ThemedText>
+        </Collapsible>
       </ThemedView>
-
-      {/* Quick Stats */}
-      <ThemedView style={styles.statsContainer}>
-        <ThemedView style={styles.statItem}>
-          <ThemedText type="defaultSemiBold">⏱️ Active Duration</ThemedText>
-          <ThemedText>24h 15m</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.statItem}>
-          <ThemedText type="defaultSemiBold">🚫 Blocks Today</ThemedText>
-          <ThemedText>42 attempts</ThemedText>
-        </ThemedView>
-      </ThemedView>
-
-      {/* Existing Collapsible Sections with enhancements */}
-      <Collapsible title="How it works">
-        <ThemedText style={styles.sectionText}>
-          🛡️ Real-time monitoring of all text input and displayed content
-        </ThemedText>
-        <ThemedText style={styles.sectionText}>
-          ⚡ Instant blocking of inappropriate content
-        </ThemedText>
-        <ThemedText style={styles.sectionText}>
-          🔒 Time-locked security once activated
-        </ThemedText>
-      </Collapsible>
-
-      {/* Enhanced Features Section */}
-      <Collapsible title="Advanced Protection Features">
-        <ThemedView style={styles.featureItem}>
-          <IconSymbol name="checkmark.shield.fill" size={20} color="#4CAF50" />
-          <ThemedText style={styles.featureText}>Deep Content Analysis</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.featureItem}>
-          <IconSymbol name="clock.fill" size={20} color="#FFA000" />
-          <ThemedText style={styles.featureText}>Customizable Time Locks</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.featureItem}>
-          <IconSymbol name="eye.slash.fill" size={20} color="#D32F2F" />
-          <ThemedText style={styles.featureText}>Stealth Mode</ThemedText>
-        </ThemedView>
-      </Collapsible>
-
-      {/* New FAQ Section */}
-      <Collapsible title="FAQ & Troubleshooting">
-        <ThemedText style={styles.faqQuestion}>How do I emergency disable?</ThemedText>
-        <ThemedText style={styles.faqAnswer}>
-          Contact support with your recovery code for verification
-        </ThemedText>
-        
-        <ThemedText style={styles.faqQuestion}>Battery usage concerns?</ThemedText>
-        <ThemedText style={styles.faqAnswer}>
-          Optimized to use less than 2% battery daily
-        </ThemedText>
-      </Collapsible>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 20,
+  },
   headerImage: {
     color: '#808080',
     bottom: -90,
@@ -112,6 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     backgroundColor: 'rgba(100,100,100,0.1)',
+    alignItems: 'center',
   },
   statusTitle: {
     marginBottom: 15,
@@ -119,9 +131,8 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     marginBottom: 20,
-    gap: 10,
   },
   statItem: {
     flex: 1,
@@ -145,6 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
+    alignSelf: 'center',
   },
   sectionText: {
     marginVertical: 5,
