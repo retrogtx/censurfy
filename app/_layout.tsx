@@ -1,39 +1,98 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { Redirect, Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useColorScheme, Platform } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import { useCallback, useState } from 'react';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import React from 'react';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+// Web-compatible storage implementation
+const storage = {
+  async getItem(key: string) {
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(key);
+    }
+    return SecureStore.getItemAsync(key);
+  },
+  async setItem(key: string, value: string) {
+    if (Platform.OS === 'web') {
+      return localStorage.setItem(key, value);
+    }
+    return SecureStore.setItemAsync(key, value);
+  },
+  async removeItem(key: string) {
+    if (Platform.OS === 'web') {
+      return localStorage.removeItem(key);
+    }
+    return SecureStore.deleteItemAsync(key);
+  },
+};
+
 export default function RootLayout() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+
+  const [fontsLoaded, fontError] = useFonts({
+    'Inter-Bold': 'https://rsms.me/inter/font-files/Inter-Bold.woff2?v=3.19',
+    'Inter-Medium': 'https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.19',
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    checkAuthStatus();
+  }, []);
 
-  if (!loaded) {
+  const checkAuthStatus = async () => {
+    const token = await storage.getItem('userToken');
+    setIsAuthenticated(!!token);
+  };
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 
+  if (isAuthenticated === null) {
+    return null; // Still loading
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+          },
+          headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+          headerTitleStyle: {
+            fontFamily: 'Inter-Bold',
+          },
+        }}>
+        {!isAuthenticated ? (
+          <Stack.Screen
+            name="login"
+            options={{
+              headerShown: false,
+            }}
+          />
+        ) : (
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+        )}
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    </>
   );
 }
