@@ -25,6 +25,10 @@
     },
     "android": {
       "package": "com.amritwt.censurfy"
-    }
+    },
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/fonts/*"
+    ]
   }
 }

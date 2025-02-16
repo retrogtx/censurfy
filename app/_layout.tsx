@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
+import { View, Text } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,20 +49,29 @@ export default function RootLayout() {
   const checkAuthStatus = async () => {
     const token = await storage.getItem('userToken');
     setIsAuthenticated(!!token);
+    console.log("isAuthenticated:", !!token);
   };
 
-  const onLayoutRootView = useCallback(async () => {
+  useEffect(() => {
     if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
-    return null;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   if (isAuthenticated === null) {
-    return null; // Still loading
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   return (
