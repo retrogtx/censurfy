@@ -5,7 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  NativeModules,
+  NativeEventEmitter,
+  Alert,
+  ScrollView,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -16,6 +21,9 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { IconName } from '@/app/types';
+
+const { AccessibilityModule } = NativeModules;
+const accessibilityEventEmitter = new NativeEventEmitter(AccessibilityModule);
 
 // Add type definitions for the Toggle props
 interface ToggleProps {
@@ -88,70 +96,175 @@ const Toggle = ({ isEnabled, onToggle, size = 'large', icon }: ToggleProps) => {
 export default function ProtectionScreen() {
   const [isProtectionEnabled, setIsProtectionEnabled] = useState(false);
   const [isUninstallProtected, setIsUninstallProtected] = useState(false);
+  const [isAccessibilityEnabled, setIsAccessibilityEnabled] = useState(false);
+  const [blockDuration, setBlockDuration] = useState(60); // Default 60 minutes
+  
+  // Check if accessibility service is enabled
+  useEffect(() => {
+    checkAccessibilityPermission();
+    
+    // Listen for accessibility service connection
+    const subscription = accessibilityEventEmitter.addListener(
+      'accessibilityServiceConnected',
+      () => {
+        setIsAccessibilityEnabled(true);
+      }
+    );
+    
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
+  const checkAccessibilityPermission = async () => {
+    try {
+      const enabled = await AccessibilityModule.isAccessibilityServiceEnabled();
+      setIsAccessibilityEnabled(enabled);
+    } catch (error) {
+      console.log('Error checking accessibility permission:', error);
+    }
+  };
+  
+  const handleProtectionToggle = (enabled: boolean) => {
+    if (enabled && !isAccessibilityEnabled) {
+      // Prompt user to enable accessibility service
+      Alert.alert(
+        "Permission Required",
+        "To enable content blocking across your device, Censurfy needs accessibility permission.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Open Settings", 
+            onPress: () => AccessibilityModule.openAccessibilitySettings() 
+          }
+        ]
+      );
+      return;
+    }
+    
+    setIsProtectionEnabled(enabled);
+    if (Platform.OS === 'android') {
+      AccessibilityModule.setBlockingEnabled(enabled);
+      AccessibilityModule.setBlockerTimer(blockDuration);
+    }
+  };
+  
+  const handleUninstallProtectionToggle = (enabled: boolean) => {
+    if (enabled && !isAccessibilityEnabled) {
+      Alert.alert(
+        "Permission Required",
+        "To prevent app uninstallation, Censurfy needs accessibility permission.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Open Settings", 
+            onPress: () => AccessibilityModule.openAccessibilitySettings() 
+          }
+        ]
+      );
+      return;
+    }
+    
+    setIsUninstallProtected(enabled);
+    if (Platform.OS === 'android') {
+      AccessibilityModule.setUninstallProtection(enabled);
+    }
+  };
 
   return (
-    <LinearGradient
-      colors={['#1a1a1a', '#2d2d2d']}
-      style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Content Protection</Text>
-        <Text style={styles.subtitle}>
-          Toggle to enable NSFW content blocking
-        </Text>
-
-        <Toggle
-          isEnabled={isProtectionEnabled}
-          onToggle={setIsProtectionEnabled}
-          icon={isProtectionEnabled ? 'shield' : 'shield-outline'}
-          size="large"
-        />
-
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>
-            Protection is {isProtectionEnabled ? 'Active' : 'Inactive'}
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <LinearGradient
+        colors={['#1a1a1a', '#2d2d2d']}
+        style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Content Protection</Text>
+          <Text style={styles.subtitle}>
+            Toggle to enable NSFW content blocking
           </Text>
-          <Text style={styles.statusDescription}>
-            {isProtectionEnabled
-              ? 'Your content is being filtered for inappropriate material'
-              : 'Warning: Content filtering is disabled'}
-          </Text>
-        </View>
 
-        <View style={styles.premiumFeature}>
-          <View style={styles.premiumHeader}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            <Text style={styles.premiumText}>Premium Feature</Text>
+          <Toggle
+            isEnabled={isProtectionEnabled}
+            onToggle={handleProtectionToggle}
+            icon={isProtectionEnabled ? 'shield' : 'shield-outline'}
+            size="large"
+          />
+
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>
+              Protection is {isProtectionEnabled ? 'Active' : 'Inactive'}
+            </Text>
+            <Text style={styles.statusDescription}>
+              {isProtectionEnabled
+                ? 'Your content is being filtered for inappropriate material'
+                : 'Warning: Content filtering is disabled'}
+            </Text>
+            
+            {!isAccessibilityEnabled && (
+              <TouchableOpacity 
+                style={styles.permissionButton}
+                onPress={() => AccessibilityModule.openAccessibilitySettings()}>
+                <Text style={styles.permissionButtonText}>
+                  Enable Accessibility Permission
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          <View style={styles.premiumToggle}>
-            <View style={styles.premiumInfo}>
-              <Text style={styles.premiumTitle}>
-                Prevent App Uninstallation
-              </Text>
-              <Text style={styles.premiumDescription}>
-                Lock the app to prevent unauthorized removal
-              </Text>
-            </View>
-            <Toggle
-              isEnabled={isUninstallProtected}
-              onToggle={setIsUninstallProtected}
-              icon={isUninstallProtected ? 'lock-closed' : 'lock-open'}
-              size="small"
+          
+          {/* Block Duration Selector */}
+          <View style={styles.sliderContainer}>
+            <Text style={styles.sliderLabel}>Block Duration: {blockDuration} minutes</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={120}
+              step={1}
+              value={blockDuration}
+              onValueChange={setBlockDuration}
+              minimumTrackTintColor="#4c669f"
+              maximumTrackTintColor="#444"
+              thumbTintColor="#fff"
             />
+            <Text style={styles.sliderDescription}>
+              Content will be blocked for this duration before you can view it again
+            </Text>
           </View>
-        </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>1,234</Text>
-            <Text style={styles.statLabel}>Blocks Today</Text>
+          <View style={styles.premiumFeature}>
+            <View style={styles.premiumHeader}>
+              <Ionicons name="star" size={20} color="#FFD700" />
+              <Text style={styles.premiumText}>Premium Feature</Text>
+            </View>
+            <View style={styles.premiumToggle}>
+              <View style={styles.premiumInfo}>
+                <Text style={styles.premiumTitle}>
+                  Prevent App Uninstallation
+                </Text>
+                <Text style={styles.premiumDescription}>
+                  Lock the app to prevent unauthorized removal
+                </Text>
+              </View>
+              <Toggle
+                isEnabled={isUninstallProtected}
+                onToggle={handleUninstallProtectionToggle}
+                icon={isUninstallProtected ? 'lock-closed' : 'lock-open'}
+                size="small"
+              />
+            </View>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>89%</Text>
-            <Text style={styles.statLabel}>Accuracy</Text>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>1,234</Text>
+              <Text style={styles.statLabel}>Blocks Today</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>89%</Text>
+              <Text style={styles.statLabel}>Accuracy</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </ScrollView>
   );
 }
 
@@ -164,6 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 28,
@@ -218,7 +332,7 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   statusText: {
     fontSize: 20,
@@ -231,13 +345,49 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
     fontFamily: 'Inter-Medium',
+    marginBottom: 15,
+  },
+  permissionButton: {
+    backgroundColor: '#4c669f',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  permissionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+  },
+  sliderContainer: {
+    width: '100%',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 30,
+  },
+  sliderLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Inter-Bold',
+    marginBottom: 15,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderDescription: {
+    color: '#999',
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    marginTop: 10,
   },
   premiumFeature: {
     width: '100%',
     backgroundColor: '#2a2a2a',
     borderRadius: 15,
     padding: 20,
-    marginBottom: 40,
+    marginBottom: 30,
   },
   premiumHeader: {
     flexDirection: 'row',
