@@ -1,5 +1,0 @@
-<resources>
-  <string name="app_name">censurfy</string>
-  <string name="expo_system_ui_user_interface_style" translatable="false">automatic</string>
-  <string name="accessibility_service_description">Censurfy monitors text on your screen to block inappropriate content and provides protection from uninstallation.</string>
-</resources>

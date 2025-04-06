@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+we are making a nsfw blocker for mobile, android first using react native.
+
+we want it to be such that whenever the screen has a nsfw word, the application exits and we see a pop up for the same, saying nsfw content detected, exiting.
+
+
