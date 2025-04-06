@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">censurfy</string>
+    <string name="accessibility_service_label">Censurfy Screen Monitor</string>
+    <string name="accessibility_service_description">Monitors screen content for NSFW words to protect the user. Requires permission to read screen text.</string>
+</resources> 
